@@ -71,7 +71,7 @@ def predict_and_plot_pr_curve(merged, target_column):
     y_prob_rf = clf_rf.predict_proba(X_test)[:, 1]
 
     # Train XGBoost
-    clf_xgb = XGBClassifier(n_estimators=100, random_state=42, use_label_encoder=False, eval_metric='logloss')
+    clf_xgb = XGBClassifier(n_estimators=100, random_state=42, eval_metric='logloss')
     clf_xgb.fit(X_train, y_train)
     y_prob_xgb = clf_xgb.predict_proba(X_test)[:, 1]
 
