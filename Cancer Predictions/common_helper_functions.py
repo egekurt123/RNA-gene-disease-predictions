@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import precision_recall_curve, average_precision_score, classification_report
+from sklearn.metrics import precision_recall_curve, average_precision_score, roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -82,6 +82,7 @@ def predict_and_plot_pr_curve(merged, target_column):
     precision_xgb, recall_xgb, _ = precision_recall_curve(y_test, y_prob_xgb)
     ap_score_xgb = average_precision_score(y_test, y_prob_xgb)
 
+    # Plot Precision-Recall curves
     plt.figure(figsize=(7, 5))
     plt.plot(recall_rf, precision_rf, label=f'Random Forest (AP={ap_score_rf:.3f})', linewidth=2)
     plt.plot(recall_xgb, precision_xgb, label=f'XGBoost (AP={ap_score_xgb:.3f})', linewidth=2)
@@ -92,3 +93,8 @@ def predict_and_plot_pr_curve(merged, target_column):
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.show()
+
+    # Print auPRC scores
+    print(f"Random Forest - auPRC: {ap_score_rf:.3f}")
+    print(f"XGBoost - auPRC: {ap_score_xgb:.3f}")
+    print()
