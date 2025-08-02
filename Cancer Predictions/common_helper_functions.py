@@ -27,7 +27,7 @@ def investigate_dataset(dataset):
     elif dataset['X'].ndim == 2:
        print(f"X first sample (first 10 features): {dataset['X'][0, :10]}")
 
-def create_gene_embedding_dataframe(embeddings, genes, method_name="mrl_pca"):
+def create_gene_embedding_dataframe(embeddings, genes):
     # Create column names for embedding dimensions
     n_dims = embeddings.shape[1]
     column_names = [f'PCA_{i}' for i in range(n_dims)]
