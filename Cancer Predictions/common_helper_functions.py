@@ -27,13 +27,19 @@ def investigate_dataset(dataset):
     elif dataset['X'].ndim == 2:
        print(f"X first sample (first 10 features): {dataset['X'][0, :10]}")
 
-def create_gene_embedding_dataframe(embeddings, genes):
-    # Create column names for embedding dimensions
-    n_dims = embeddings.shape[1]
-    column_names = [f'PCA_{i}' for i in range(n_dims)]
+def create_embedding_dataframe(embeddings, genes, pca=True):
+
+    embeddings_flat = embeddings.reshape(embeddings.shape[0], -1)
+
+    if pca:
+        embeddings = gene_embeddings_pca(embeddings_flat)
+        n_dims = embeddings.shape[1]
+        column_names = [f'PCA_{i}' for i in range(n_dims)]
+    else:
+        column_names = [f'Feature_{i}' for i in range(embeddings_flat.shape[1])]
     
     # Create DataFrame
-    df = pd.DataFrame(embeddings, columns=column_names)
+    df = pd.DataFrame(embeddings_flat, columns=column_names)
     df['gene_id'] = genes
     df = df.set_index('gene_id')
 
@@ -42,14 +48,17 @@ def create_gene_embedding_dataframe(embeddings, genes):
     
     return df
     
-def isoform_to_gene_embeddings_pca(X, genes, n_components=128):
-    X_flat = X.reshape(X.shape[0], -1)
-    
+def gene_embeddings_pca(X, n_components=2048):
+  
     pca = PCA(n_components=n_components)
-    gene_embeddings = pca.fit_transform(X_flat)
-    
-    return gene_embeddings, pca
+    gene_embeddings = pca.fit_transform(X)
 
+    print(f"PCA embeddings shape: {gene_embeddings.shape}")
+
+    total_explained_variance = np.sum(pca.explained_variance_ratio_)
+    print(f"Total explained variance by PCA {total_explained_variance:.2%}")
+    
+    return gene_embeddings
 
 def predict_and_plot_pr_curve(merged, target_column):
     """
