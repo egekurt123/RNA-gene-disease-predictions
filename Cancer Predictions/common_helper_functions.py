@@ -29,17 +29,17 @@ def investigate_dataset(dataset):
 
 def create_embedding_dataframe(embeddings, genes, pca=True):
 
-    embeddings_flat = embeddings.reshape(embeddings.shape[0], -1)
+    embeddings = embeddings.reshape(embeddings.shape[0], -1)
 
     if pca:
-        embeddings = gene_embeddings_pca(embeddings_flat)
+        embeddings = gene_embeddings_pca(embeddings)
         n_dims = embeddings.shape[1]
         column_names = [f'PCA_{i}' for i in range(n_dims)]
     else:
-        column_names = [f'Feature_{i}' for i in range(embeddings_flat.shape[1])]
+        column_names = [f'Feature_{i}' for i in range(embeddings.shape[1])]
     
     # Create DataFrame
-    df = pd.DataFrame(embeddings_flat, columns=column_names)
+    df = pd.DataFrame(embeddings, columns=column_names)
     df['gene_id'] = genes
     df = df.set_index('gene_id')
 
