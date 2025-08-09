@@ -27,12 +27,11 @@ def investigate_dataset(dataset):
     elif dataset['X'].ndim == 2:
        print(f"X first sample (first 10 features): {dataset['X'][0, :10]}")
 
-def create_embedding_dataframe(embeddings, genes, pca=True):
-
-    embeddings = embeddings.reshape(embeddings.shape[0], -1)
+def create_embedding_dataframe(embeddings, genes, pca=True, n_components=2048):
 
     if pca:
-        embeddings = gene_embeddings_pca(embeddings)
+        embeddings = embeddings.reshape(embeddings.shape[0], -1)
+        embeddings = gene_embeddings_pca(embeddings, n_components=n_components)
         n_dims = embeddings.shape[1]
         column_names = [f'PCA_{i}' for i in range(n_dims)]
     else:
