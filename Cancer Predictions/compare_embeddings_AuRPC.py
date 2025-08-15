@@ -21,9 +21,7 @@ emogi_relevant_columns = emogi_cancer_predictions[['ID','Name', "NCG_Known_Cance
 
 
 #RNA embeddings
-rna_hl_human = np.load(path + '../../../../../../../../../../s/project/yeast_gxg/data/orthrus_data/rna_hl_human.npz')
-rna_hl_pca = create_embedding_dataframe(rna_hl_human['X'], rna_hl_human['genes'])
-
+orthrus_embeddings = pd.read_csv('../preprocessed_data/orthrus_processed.csv')
 
 
 def compare_embeddings_pr_curves(embedding_datasets, cancer_data, target_column):
@@ -47,9 +45,10 @@ def compare_embeddings_pr_curves(embedding_datasets, cancer_data, target_column)
     for embedding_name, embedding_df in embedding_datasets.items():
         try:
             # Merge embedding with cancer data
-            if embedding_name == 'RNA_HL_Human':
-                merged = embedding_df.merge(cancer_data, left_index=True, right_on='Name', how='inner')
-                merged.rename(columns={'Name': 'ID'}, inplace=True)
+            if embedding_name == 'Orthrus':
+                merged = embedding_df.merge(cancer_data, left_on='gene_id', right_on='ID', how='inner')
+                merged.drop(columns=['gene_id'], inplace=True)
+                merged.rename(columns={'gene_id': 'ID'}, inplace=True)
                 merged.set_index('ID', inplace=True)
             else:
                 if 'gene_id' in embedding_df.columns:
@@ -154,7 +153,7 @@ embedding_datasets = {
     'POPS_EXP': pops_exp,
     'STRING': string,
     'STRING_EXP': string_exp,
-    'RNA_HL_Human': rna_hl_pca
+    'Orthrus': orthrus_embeddings
 }
 
 # Compare embeddings for each target
