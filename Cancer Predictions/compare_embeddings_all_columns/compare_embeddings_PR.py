@@ -1,6 +1,8 @@
+import sys
+sys.path.append('..')
 from common_helper_functions import *
 
-path = "../../../../../../../../../../s/project/gene_embedding/funcrvp_embeddings/"
+path = "../../../../../../../../../../../s/project/gene_embedding/funcrvp_embeddings/"
 
 #Paper Embeddings
 esm2 = pd.read_csv(path + 'ESM2_PCA_d512.tsv', sep='\t')
@@ -16,12 +18,12 @@ string = pd.read_csv(path + 'STRING_d128.tsv', sep='\t')
 string_exp = pd.read_csv(path + 'STRING_EXP_d128.tsv', sep='\t')
 
 #Cancer columns
-emogi_cancer_predictions = pd.read_csv('../../../../../../../../s/project/gene_embedding/input_data/cancer_eval/emogi_predictions.tsv', sep='\t')
+emogi_cancer_predictions = pd.read_csv('../../../../../../../../../s/project/gene_embedding/input_data/cancer_eval/emogi_predictions.tsv', sep='\t')
 emogi_relevant_columns = emogi_cancer_predictions[['ID','Name', "NCG_Known_Cancer_Gene", "NCG_Candidate_Cancer_Gene", "OncoKB_Cancer_Gene", "Bailey_et_al_Cancer_Gene"]]
 
 
 #RNA embeddings
-orthrus_embeddings = pd.read_csv('../preprocessed_data/orthrus_processed.csv')
+orthrus_embeddings = pd.read_csv('../../preprocessed_data/orthrus_processed.csv')
 
 def compare_embeddings_pr_curves(embedding_datasets, cancer_data, target_column):
     """
@@ -148,8 +150,8 @@ def compare_embeddings_pr_curves(embedding_datasets, cancer_data, target_column)
     rf_filename = f'{target_column}_RandomForest_comparison.png'
     xgb_filename = f'{target_column}_XGBoost_comparison.png'
 
-    fig_rf.savefig("plots/PR_curves/" + rf_filename, dpi=300, bbox_inches='tight')
-    fig_xgb.savefig("plots/PR_curves/" + xgb_filename, dpi=300, bbox_inches='tight')
+    fig_rf.savefig("../plots/PR_curves/" + rf_filename, dpi=300, bbox_inches='tight')
+    fig_xgb.savefig("../plots/PR_curves/" + xgb_filename, dpi=300, bbox_inches='tight')
 
     plt.show()
     

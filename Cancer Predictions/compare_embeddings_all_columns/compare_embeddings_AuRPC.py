@@ -1,6 +1,8 @@
+import sys
+sys.path.append('..')
 from common_helper_functions import *
 
-path = "../../../../../../../../../../s/project/gene_embedding/funcrvp_embeddings/"
+path = "../../../../../../../../../../../s/project/gene_embedding/funcrvp_embeddings/"
 
 #Paper Embeddings
 esm2 = pd.read_csv(path + 'ESM2_PCA_d512.tsv', sep='\t')
@@ -16,12 +18,12 @@ string = pd.read_csv(path + 'STRING_d128.tsv', sep='\t')
 string_exp = pd.read_csv(path + 'STRING_EXP_d128.tsv', sep='\t')
 
 #Cancer columns
-emogi_cancer_predictions = pd.read_csv('../../../../../../../../s/project/gene_embedding/input_data/cancer_eval/emogi_predictions.tsv', sep='\t')
+emogi_cancer_predictions = pd.read_csv('../../../../../../../../../s/project/gene_embedding/input_data/cancer_eval/emogi_predictions.tsv', sep='\t')
 emogi_relevant_columns = emogi_cancer_predictions[['ID','Name', "NCG_Known_Cancer_Gene", "NCG_Candidate_Cancer_Gene", "OncoKB_Cancer_Gene", "Bailey_et_al_Cancer_Gene"]]
 
 
 #RNA embeddings
-orthrus_embeddings = pd.read_csv('../preprocessed_data/orthrus_processed.csv')
+orthrus_embeddings = pd.read_csv('../../preprocessed_data/orthrus_processed.csv')
 
 
 def compare_embeddings_pr_curves(embedding_datasets, cancer_data, target_column):
@@ -138,7 +140,7 @@ def compare_embeddings_pr_curves(embedding_datasets, cancer_data, target_column)
         # Legend not strictly necessary (colors map to x-ticks), so omitted
 
         fig.tight_layout()
-        out_file = f"plots/AuPRC/AuPRC_{target_column}_{model}_barplot.png"
+        out_file = f"../plots/AuPRC/AuPRC_{target_column}_{model}_barplot.png"
         fig.savefig(out_file, dpi=300, bbox_inches='tight')
         plt.show()
         print(f"Bar plot saved as: {out_file}")
