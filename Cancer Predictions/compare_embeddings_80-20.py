@@ -60,11 +60,6 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data):
             X = X.select_dtypes(include=[np.number]).reset_index(drop=True)
             y = merged['label'].reset_index(drop=True)
             
-            # Skip if not enough samples
-            if len(X) < 10 or y.sum() < 5:
-                print(f"Skipping {embedding_name}: insufficient samples (total: {len(X)}, positive: {y.sum()})")
-                continue
-            
             # Train-test split
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42, stratify=y
@@ -143,10 +138,6 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data):
     # Save the plots
     rf_filename = 'Emogi_Labels_RandomForest_comparison.png'
     xgb_filename = 'Emogi_Labels_XGBoost_comparison.png'
-
-    # Create directory if it doesn't exist
-    import os
-    os.makedirs("plots/PR_curves", exist_ok=True)
     
     fig_rf.savefig(f"plots/PR_curves/{rf_filename}", dpi=300, bbox_inches='tight')
     fig_xgb.savefig(f"plots/PR_curves/{xgb_filename}", dpi=300, bbox_inches='tight')
