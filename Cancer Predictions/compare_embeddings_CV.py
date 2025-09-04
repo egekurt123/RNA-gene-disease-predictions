@@ -39,11 +39,7 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data):
     for i, (embedding_name, embedding_df) in enumerate(embedding_datasets.items()):
         try:
             # Merge embedding with emogi data
-            if embedding_name == 'Orthrus':
-                merged = embedding_df.merge(emogi_data, on='gene_id', how='inner')
-                merged.set_index('gene_id', inplace=True)
-            elif embedding_name == 'Emogi_Predictions':
-                # For emogi predictions, we already have gene_id
+            if embedding_name == 'Orthrus' or embedding_name == 'Emogi_Predictions':
                 merged = embedding_df.merge(emogi_data, on='gene_id', how='inner')
                 merged.set_index('gene_id', inplace=True)
             else: 
@@ -64,10 +60,10 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data):
             X = X.select_dtypes(include=[np.number])
             y = merged['label']
             
-            # Skip if not enough samples
-            if len(X) < 10 or y.sum() < 5:
-                print(f"Skipping {embedding_name}: insufficient samples (total: {len(X)}, positive: {y.sum()})")
-                continue
+            # Print gene count and class distribution
+            n_positives = y.sum()
+            n_negatives = len(y) - n_positives
+            print(f"{embedding_name}: Using {len(merged)} genes (Pos: {n_positives}, Neg: {n_negatives})")
             
             # Storage for CV results
             cv_precision_rf = []
@@ -241,9 +237,10 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data):
             X = X.select_dtypes(include=[np.number])
             y = merged['label']
 
-            if len(X) < 10 or y.sum() < 5:
-                print(f"Skipping {embedding_name}: insufficient samples")
-                continue
+            # Print gene count and class distribution
+            n_positives = y.sum()
+            n_negatives = len(y) - n_positives
+            print(f"{embedding_name}: Using {len(merged)} genes (Pos: {n_positives}, Neg: {n_negatives})")
 
             # Storage for CV results
             cv_ap_scores_rf = []

@@ -35,11 +35,7 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data):
     for i, (embedding_name, embedding_df) in enumerate(embedding_datasets.items()):
         try:
             # Merge embedding with emogi data
-            if embedding_name == 'Orthrus':
-                merged = embedding_df.merge(emogi_data, on='gene_id', how='inner')
-                merged.set_index('gene_id', inplace=True)
-            elif embedding_name == 'Emogi_Predictions':
-                # For emogi predictions, we already have gene_id
+            if embedding_name == 'Orthrus' or embedding_name == 'Emogi_Predictions':
                 merged = embedding_df.merge(emogi_data, on='gene_id', how='inner')
                 merged.set_index('gene_id', inplace=True)
             else: 
@@ -59,6 +55,11 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data):
             X = merged.drop(columns_to_drop, axis=1, errors='ignore')
             X = X.select_dtypes(include=[np.number]).reset_index(drop=True)
             y = merged['label'].reset_index(drop=True)
+
+            # Print gene count and class distribution
+            n_positives = y.sum()
+            n_negatives = len(y) - n_positives
+            print(f"{embedding_name}: Using {len(merged)} genes (Pos: {n_positives}, Neg: {n_negatives})")
             
             # Train-test split
             X_train, X_test, y_train, y_test = train_test_split(
@@ -199,9 +200,10 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data):
             X = X.select_dtypes(include=[np.number]).reset_index(drop=True)
             y = merged['label'].reset_index(drop=True)
 
-            if len(X) < 10 or y.sum() < 5:
-                print(f"Skipping {embedding_name}: insufficient samples")
-                continue
+            # Print gene count and class distribution
+            n_positives = y.sum()
+            n_negatives = len(y) - n_positives
+            print(f"{embedding_name}: Using {len(merged)} genes (Pos: {n_positives}, Neg: {n_negatives})")
 
             # Train-test split
             X_train, X_test, y_train, y_test = train_test_split(
