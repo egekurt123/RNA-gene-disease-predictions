@@ -7,6 +7,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_curve, average_precision_score, roc_auc_score
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -464,4 +466,24 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots
             print(f"Bar plot saved as: {out_file}")
 
     return results_df
+
+def pca_reduce(df, n_components=256, id_cols=['gene_id']):
+    df_copy = df.copy()
+    # keep id columns if present
+    present_id_cols = [c for c in id_cols if c in df_copy.columns]
+    numeric_cols = df_copy.select_dtypes(include=[np.number]).columns.tolist()
+    # exclude numeric id columns if any (e.g., gene index)
+    numeric_cols = [c for c in numeric_cols if c not in present_id_cols]
+    if len(numeric_cols) <= n_components:
+        # nothing to reduce; return original frame (keep order)
+        return df_copy
+    X = df_copy[numeric_cols].values
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(X)
+    pca = PCA(n_components=n_components, random_state=42)
+    Xp = pca.fit_transform(Xs)
+    pc_cols = [f"PC_{i+1}" for i in range(Xp.shape[1])]
+    df_pca = pd.DataFrame(Xp, columns=pc_cols, index=df_copy.index)
+    non_numeric = df_copy.drop(columns=numeric_cols)
+    return pd.concat([non_numeric.reset_index(drop=True), df_pca.reset_index(drop=True)], axis=1)
 
