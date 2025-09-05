@@ -14,6 +14,22 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from xgboost import XGBClassifier
 
+# datasets
+path = "../../../../../../../../../../../s/project/gene_embedding/funcrvp_embeddings/"
+
+omics = pd.read_csv(path + 'omics_d256.tsv', sep='\t')
+
+string = pd.read_csv(path + 'STRING_d128.tsv', sep='\t')
+
+string_exp = pd.read_csv(path + 'STRING_EXP_d128.tsv', sep='\t')
+
+orthrus = pd.read_csv('../preprocessed_data/orthrus_processed.csv')
+
+emogi = pd.read_csv("../preprocessed_data/emogi_preprocessed.tsv", sep='\t')
+
+emogi_predictions = emogi[['gene_id', 'pred']].copy()
+
+# functions
 def investigate_dataset(dataset):
     """
     Print basic information about the dataset.
