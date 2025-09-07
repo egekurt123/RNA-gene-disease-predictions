@@ -64,7 +64,7 @@ def filter_to_common_genes(embedding_datasets, target_data):
     print(f"Filtered to {len(common_genes)} common genes across all datasets.")
     return filtered_embeddings, target_filtered, common_genes
 
-def compare_embeddings_auprc_barplots(embedding_datasets, target_data, save_plots=True, use_random_forest=True):
+def compare_embeddings_auprc_barplots(embedding_datasets, target_data, save_plots=True, use_random_forest=True, disease_name="Disease"):
     """
     Compute auPRC for multiple embeddings using RF and XGBoost with 5-fold CV and create separate bar plots per model.
     Uses target dataset label column as ground truth.
