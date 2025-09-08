@@ -197,7 +197,7 @@ def compare_embeddings_auprc_barplots(embedding_datasets, target_data, save_plot
                        f"{h:.3f}", ha='center', va='bottom', fontsize=9)
 
         ax.set_ylabel('auPRC (5-Fold CV)')
-        ax.set_title(f'{model} auPRC Across Embeddings (Target Labels, 5-Fold CV)')
+        ax.set_title(f'{model} auPRC Across Embeddings ({disease_name}, 5-Fold CV)')
         ax.set_xticklabels(sub.index, rotation=45, ha='right')
         ymax = (sub['auPRC'] + sub['auPRC_std']).max() if (sub['auPRC'] + sub['auPRC_std']).notna().any() else 0
         ax.set_ylim(0, min(1.0, ymax + 0.05))
@@ -209,7 +209,7 @@ def compare_embeddings_auprc_barplots(embedding_datasets, target_data, save_plot
             # Create directory if it doesn't exist
             os.makedirs("plots/AuPRC", exist_ok=True)
 
-            out_file = f"plots/AuPRC/AuPRC_Target_Labels_{model}_5FoldCV_barplot.png"
+            out_file = f"plots/AuPRC/AuPRC_{disease_name}_{model}_5FoldCV_barplot.png"
             fig.savefig(out_file, dpi=300, bbox_inches='tight')
             plt.show()
             print(f"Bar plot saved as: {out_file}")
