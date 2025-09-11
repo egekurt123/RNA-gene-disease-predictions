@@ -1,0 +1,54 @@
+from common_helper_functions import *
+
+# Define combinated datasets
+orthrus_omics = orthrus.merge(omics, on='gene_id', how='inner')
+orthrus_string = orthrus.merge(string, on='gene_id', how='inner')
+orthrus_string_exp = orthrus.merge(string_exp, on='gene_id', how='inner')
+orthrus_emogi = orthrus.merge(emogi, on='gene_id', how='inner').drop(columns=['label'])
+
+# normalize combined datasets using z-score normalization
+orthrus_omics_normalized = orthrus_omics.copy()
+numeric_cols = orthrus_omics.select_dtypes(include=[np.number]).columns
+orthrus_omics_normalized[numeric_cols] = (orthrus_omics[numeric_cols] - orthrus_omics[numeric_cols].mean()) / orthrus_omics[numeric_cols].std()
+
+orthrus_string_normalized = orthrus_string.copy()
+numeric_cols = orthrus_string.select_dtypes(include=[np.number]).columns
+orthrus_string_normalized[numeric_cols] = (orthrus_string[numeric_cols] - orthrus_string[numeric_cols].mean()) / orthrus_string[numeric_cols].std()
+
+orthrus_string_exp_normalized = orthrus_string_exp.copy()
+numeric_cols = orthrus_string_exp.select_dtypes(include=[np.number]).columns
+orthrus_string_exp_normalized[numeric_cols] = (orthrus_string_exp[numeric_cols] - orthrus_string_exp[numeric_cols].mean()) / orthrus_string_exp[numeric_cols].std()
+
+orthrus_emogi_normalized = orthrus_emogi.copy()
+numeric_cols = orthrus_emogi.select_dtypes(include=[np.number]).columns
+orthrus_emogi_normalized[numeric_cols] = (orthrus_emogi[numeric_cols] - orthrus_emogi[numeric_cols].mean()) / orthrus_emogi[numeric_cols].std()
+
+# apply pca
+orthrus_omics_pca = pca_reduce(orthrus_omics_normalized, n_components=256)
+orthrus_string_pca = pca_reduce(orthrus_string_normalized, n_components=256)
+orthrus_string_exp_pca = pca_reduce(orthrus_string_exp_normalized, n_components=256)
+orthrus_emogi_pca = pca_reduce(orthrus_emogi_normalized, n_components=256)
+
+# set containing everything
+
+embedding_datasets = {
+    'Omics': omics,
+    'STRING': string,
+    'STRING_EXP': string_exp,
+    'Orthrus': orthrus,
+    'Emogi_Predictions': emogi_predictions,
+    'Omics + Orthrus': orthrus_omics_pca,
+    'STRING + Orthrus': orthrus_string_pca,
+    'STRING_EXP + Orthrus': orthrus_string_exp_pca,
+    'Emogi + Orthrus ': orthrus_emogi_pca,
+}
+
+results = compare_embeddings_pr_curves(embedding_datasets, emogi, save_plots=True, title_suffix="All_Combinations")
+print("\nPR Curves Results summary (Mean ± Std):")
+print(results.pivot(index='Embedding', columns='Model', values='auPRC'))
+
+auprc_results = compare_embeddings_auprc_barplots(embedding_datasets, emogi, save_plots=True, title_suffix="All_Combinations")
+print("\nauPRC Bar Plot Results summary (Mean ± Std):")
+print(auprc_results.pivot(index='Embedding', columns='Model', values='auPRC'))
+
+

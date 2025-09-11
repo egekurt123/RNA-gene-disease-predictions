@@ -154,7 +154,7 @@ def filter_to_common_genes(embedding_datasets, emogi_data):
     print(f"Filtered to {len(common_genes)} common genes across all datasets.")
     return filtered_embeddings, emogi_filtered, common_genes
 
-def compare_embeddings_pr_curves(embedding_datasets, emogi_data, save_plots=True):
+def compare_embeddings_pr_curves(embedding_datasets, emogi_data, save_plots=True, title_suffix="", use_rf=True):
     """
     Compare multiple embeddings by training RF and XGBoost models and plotting PR curves.
     Uses emogi datasource label column as ground truth with 5-fold cross-validation.
@@ -165,7 +165,9 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data, save_plots=True
     - emogi_data: DataFrame with gene_id, label (ground truth), and prediction columns
     """
     results = []
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'][:len(embedding_datasets)]    
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
+              '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+              '#bcbd22', '#17becf'][:len(embedding_datasets)]
     
     # Create separate plots for RF and XGBoost
     fig_rf, ax_rf = plt.subplots(figsize=(12, 8))
@@ -320,6 +322,10 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data, save_plots=True
         import os
         os.makedirs("plots/PR_curves", exist_ok=True)
     
+        if title_suffix:
+            rf_filename = f'Emogi_Labels_RandomForest_5FoldCV_comparison_{title_suffix}.png'
+            xgb_filename = f'Emogi_Labels_XGBoost_5FoldCV_comparison_{title_suffix}.png'
+        
         fig_rf.savefig(f"plots/PR_curves/{rf_filename}", dpi=300, bbox_inches='tight')
         fig_xgb.savefig(f"plots/PR_curves/{xgb_filename}", dpi=300, bbox_inches='tight')
 
@@ -332,7 +338,7 @@ def compare_embeddings_pr_curves(embedding_datasets, emogi_data, save_plots=True
     # Return results DataFrame
     return pd.DataFrame(results)
 
-def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots=True):
+def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots=True, title_suffix=""):
     """
     Compute auPRC for multiple embeddings using RF and XGBoost with 5-fold CV and create separate bar plots per model.
     Uses emogi datasource label column as ground truth.
@@ -347,7 +353,8 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots
     results = []
     # Consistent color palette
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-              '#9467bd', '#8c564b', '#e377c2', '#7f7f7f'][:len(embedding_datasets)]
+              '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
+              '#bcbd22', '#17becf'][:len(embedding_datasets)]
     color_map = dict(zip(embedding_datasets.keys(), colors))
     
     # 5-fold cross-validation
@@ -475,8 +482,12 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots
         if save_plots:
             # Create directory if it doesn't exist
             os.makedirs("plots/AuPRC", exist_ok=True)
-        
-            out_file = f"plots/AuPRC/AuPRC_Emogi_Labels_{model}_5FoldCV_barplot.png"
+
+
+            if title_suffix:
+                out_file = f"plots/AuPRC/AuPRC_Emogi_Labels_{model}_5FoldCV_barplot_{title_suffix}.png"
+            else:
+                out_file = f"plots/AuPRC/AuPRC_Emogi_Labels_{model}_5FoldCV_barplot.png"
             fig.savefig(out_file, dpi=300, bbox_inches='tight')
             plt.show()
             print(f"Bar plot saved as: {out_file}")
