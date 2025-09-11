@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
+import os
 import pickle 
+import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -9,10 +11,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-import os
 import matplotlib.pyplot as plt
-import pandas as pd
 from xgboost import XGBClassifier
+
 
 # embedding datasets
 path = "../../../../../../../../../../../s/project/gene_embedding/funcrvp_embeddings/"
@@ -215,3 +216,127 @@ def compare_embeddings_auprc_barplots(embedding_datasets, target_data, save_plot
             print(f"Bar plot saved as: {out_file}")
 
     return results_df
+
+def plot_disease_embeddings_auprc_paper(embedding_datasets, disease_datasets, save_dir="plots/AuPRC", original=False, title_suffix=""):
+    """
+    Compute auPRC across embeddings with XGBoost (5-fold CV),
+    plot grouped barplot with black dots for folds, styled like the paper figure.
+    """
+    os.makedirs(save_dir, exist_ok=True)
+
+    # Define consistent color palette (added Orthrus as purple)
+    if original:
+        color_map = {
+            "STRING": "#1f77b4",       # dark blue
+            "STRING Exp": "#aec7e8",   # light blue
+            "PoPS": "#2ca02c",         # green
+            "PoPS Exp": "#98df8a",     # light green
+            "Omics": "#ff7f0e",        # orange
+            "Orthrus": "#9467bd"       # purple
+        }
+    else:
+        color_map = {
+            "Omics + Orthrus": "#ff7f0e",        # orange
+            "STRING + Orthrus": "#1f77b4",       # dark blue
+            "STRING_EXP + Orthrus": "#aec7e8",   # light blue
+            "PoPS + Orthrus": "#2ca02c",         # green
+            "PoPS_EXP + Orthrus": "#98df8a"      # light green
+        }
+
+    results = []
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+    for disease_name, target_df in disease_datasets.items():
+        for emb_name, emb_df in embedding_datasets.items():
+            try:
+                merged = emb_df.merge(target_df, on="gene_id", how="inner")
+                merged.set_index("gene_id", inplace=True)
+                X = merged.drop("target", axis=1, errors="ignore").select_dtypes(include=[np.number])
+                y = merged["target"]
+
+                fold_scores = []
+                for fold, (train_idx, test_idx) in enumerate(cv.split(X, y)):
+                    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+                    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+                    clf = XGBClassifier(n_estimators=100, random_state=42, eval_metric="logloss")
+                    clf.fit(X_train, y_train)
+                    y_prob = clf.predict_proba(X_test)[:, 1]
+                    auprc = average_precision_score(y_test, y_prob)
+                    fold_scores.append(auprc)
+
+                    results.append({
+                        "Disease": disease_name,
+                        "Embedding": emb_name,
+                        "Fold": fold,
+                        "auPRC": auprc
+                    })
+
+                print(f"{disease_name} - {emb_name}: mean auPRC = {np.mean(fold_scores):.3f}")
+
+            except Exception as e:
+                print(f"Error with {disease_name} / {emb_name}: {e}")
+                continue
+
+    results_df = pd.DataFrame(results)
+
+    # === Plotting ===
+    plt.figure(figsize=(12, 6))
+    sns.set(style="whitegrid")
+
+    # Bars = mean auPRC
+    sns.barplot(
+        data=results_df,
+        x="Disease", y="auPRC", hue="Embedding",
+        ci=None, palette=color_map, edgecolor="black", alpha=0.9
+    )
+
+    # Black dots = fold results
+    sns.stripplot(
+        data=results_df,
+        x="Disease", y="auPRC", hue="Embedding",
+        dodge=True, jitter=False, marker="o", alpha=0.8, color="black"
+    )
+
+    # Clean legend (remove duplicates)
+    handles, labels = plt.gca().get_legend_handles_labels()
+    n_embeds = len(embedding_datasets)
+    plt.legend(handles[:n_embeds], labels[:n_embeds],
+               bbox_to_anchor=(1.02, 1), loc="upper left", frameon=True)
+
+    # Style adjustments
+    plt.ylabel("auPRC", fontsize=14, weight="bold")
+    plt.xlabel("")
+    plt.title("XGBoost auPRC across diseases and embeddings (5-fold CV)", fontsize=15, weight="bold")
+    plt.xticks(rotation=25, ha="right", fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.ylim(0, 0.7)
+    plt.tight_layout()
+
+    # Save
+    out_file = os.path.join(save_dir, f"Disease_Embedding_auPRC_with_orthrus{title_suffix}.png")
+    plt.savefig(out_file, dpi=300, bbox_inches="tight")
+    plt.show()
+    print(f"Saved plot: {out_file}")
+
+    return results_df
+
+def pca_reduce(df, n_components=256, id_cols=['gene_id']):
+    df_copy = df.copy()
+    # keep id columns if present
+    present_id_cols = [c for c in id_cols if c in df_copy.columns]
+    numeric_cols = df_copy.select_dtypes(include=[np.number]).columns.tolist()
+    # exclude numeric id columns if any (e.g., gene index)
+    numeric_cols = [c for c in numeric_cols if c not in present_id_cols]
+    if len(numeric_cols) <= n_components:
+        # nothing to reduce; return original frame (keep order)
+        return df_copy
+    X = df_copy[numeric_cols].values
+    scaler = StandardScaler()
+    Xs = scaler.fit_transform(X)
+    pca = PCA(n_components=n_components, random_state=42)
+    Xp = pca.fit_transform(Xs)
+    pc_cols = [f"PC_{i+1}" for i in range(Xp.shape[1])]
+    df_pca = pd.DataFrame(Xp, columns=pc_cols, index=df_copy.index)
+    non_numeric = df_copy.drop(columns=numeric_cols)
+    return pd.concat([non_numeric.reset_index(drop=True), df_pca.reset_index(drop=True)], axis=1)
