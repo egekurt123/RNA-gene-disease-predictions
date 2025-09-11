@@ -225,23 +225,19 @@ def plot_disease_embeddings_auprc_paper(embedding_datasets, disease_datasets, sa
     os.makedirs(save_dir, exist_ok=True)
 
     # Define consistent color palette (added Orthrus as purple)
-    if original:
-        color_map = {
-            "STRING": "#1f77b4",       # dark blue
-            "STRING Exp": "#aec7e8",   # light blue
-            "PoPS": "#2ca02c",         # green
-            "PoPS Exp": "#98df8a",     # light green
-            "Omics": "#ff7f0e",        # orange
-            "Orthrus": "#9467bd"       # purple
-        }
-    else:
-        color_map = {
-            "Omics + Orthrus": "#ff7f0e",        # orange
-            "STRING + Orthrus": "#1f77b4",       # dark blue
-            "STRING_EXP + Orthrus": "#aec7e8",   # light blue
-            "PoPS + Orthrus": "#2ca02c",         # green
-            "PoPS_EXP + Orthrus": "#98df8a"      # light green
-        }
+    color_map = {
+        "STRING": "#1f77b4",       # dark blue
+        "STRING Exp": "#aec7e8",   # light blue
+        "PoPS": "#2ca02c",         # green
+        "PoPS Exp": "#98df8a",     # light green
+        "Omics": "#ff7f0e",        # orange
+        "Orthrus": "#9467bd",      # purple
+        "Omics + Orthrus": "#e377c2",        # pink
+        "STRING + Orthrus": "#17becf",       # teal
+        "STRING_EXP + Orthrus": "#bcbd22",   # olive
+        "PoPS + Orthrus": "#8c564b",         # brown
+        "PoPS_EXP + Orthrus": "#7f7f7f"      # gray
+    }
 
     results = []
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
