@@ -288,11 +288,11 @@ def plot_disease_embeddings_auprc_paper(embedding_datasets, disease_datasets, sa
     )
 
     # Black dots = fold results
-    sns.stripplot(
-        data=results_df,
-        x="Disease", y="auPRC", hue="Embedding",
-        dodge=True, jitter=False, marker="o", alpha=0.8, color="black"
-    )
+   # sns.stripplot(
+   #     data=results_df,
+   #     x="Disease", y="auPRC", hue="Embedding",
+   #     dodge=True, jitter=False, marker="o", alpha=0.8, color="black"
+   # )
 
     # Clean legend (remove duplicates)
     handles, labels = plt.gca().get_legend_handles_labels()
