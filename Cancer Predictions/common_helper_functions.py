@@ -457,7 +457,7 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots
         # Use per-embedding colors
         bar_colors = [color_map.get(e, '#333333') for e in sub.index]
         bars = ax.bar(sub.index, sub['auPRC'], 
-                     yerr=sub['auPRC_std'], 
+                     #yerr=sub['auPRC_std'], 
                      color=bar_colors, 
                      capsize=5, 
                      alpha=0.8)
@@ -467,7 +467,7 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots
             h = bar.get_height()
             std_val = sub['auPRC_std'].iloc[i]
             if not np.isnan(h):
-                ax.text(bar.get_x() + bar.get_width()/2, h + std_val + 0.005, 
+                ax.text(bar.get_x() + bar.get_width()/2, h + 0.005, 
                        f"{h:.3f}", ha='center', va='bottom', fontsize=9)
 
         ax.set_ylabel('auPRC (5-Fold CV)')
