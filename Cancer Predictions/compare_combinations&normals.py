@@ -43,9 +43,20 @@ embedding_datasets = {
     'Emogi + Orthrus ': orthrus_emogi_pca,
 }
 
-results = compare_embeddings_pr_curves(embedding_datasets, emogi, save_plots=True, title_suffix="All_Combinations")
-print("\nPR Curves Results summary (Mean ± Std):")
-print(results.pivot(index='Embedding', columns='Model', values='auPRC'))
+def add_random_guesser(embedding_datasets, reference_df, seed=42):
+    genes = reference_df['gene_id'].drop_duplicates()
+    rng = np.random.default_rng(seed)
+    rand_df = pd.DataFrame({
+        'gene_id': genes.values,
+        'rand_feature': rng.random(len(genes))  # uniform [0,1]
+    })
+    embedding_datasets['Random'] = rand_df
+
+add_random_guesser(embedding_datasets, omics)
+
+#results = compare_embeddings_pr_curves(embedding_datasets, emogi, save_plots=True, title_suffix="All_Combinations")
+#print("\nPR Curves Results summary (Mean ± Std):")
+#print(results.pivot(index='Embedding', columns='Model', values='auPRC'))
 
 auprc_results = compare_embeddings_auprc_barplots(embedding_datasets, emogi, save_plots=True, title_suffix="All_Combinations")
 print("\nauPRC Bar Plot Results summary (Mean ± Std):")
