@@ -509,8 +509,101 @@ def pca_reduce(df, n_components=256, id_cols=['gene_id']):
     Xs = scaler.fit_transform(X)
     pca = PCA(n_components=n_components, random_state=42)
     Xp = pca.fit_transform(Xs)
+    #print preserved variance
+    explained_var_ratio = pca.explained_variance_ratio_
+    total_var = explained_var_ratio.sum()
+    print(f"PCA preserved {total_var:.2%} variance with {n_components} components "
+              f"(orig dims={len(numeric_cols)}).")
     pc_cols = [f"PC_{i+1}" for i in range(Xp.shape[1])]
     df_pca = pd.DataFrame(Xp, columns=pc_cols, index=df_copy.index)
     non_numeric = df_copy.drop(columns=numeric_cols)
     return pd.concat([non_numeric.reset_index(drop=True), df_pca.reset_index(drop=True)], axis=1)
 
+
+def compare_embeddings_auprc_lollipop_xgb(embedding_datasets, emogi_data, save_plots=True, title_suffix="", n_splits=5):
+    """
+    XGBoost-only auPRC comparison across embeddings with a horizontal lollipop chart.
+    Returns a DataFrame with mean±std auPRC per embedding.
+    """
+    results = []
+    cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
+
+    # Align on common genes across all embeddings and labels
+    embedding_datasets, emogi_data, _ = filter_to_common_genes(embedding_datasets, emogi_data)
+    baseline_rate = float(emogi_data['label'].mean())
+
+    for embedding_name, embedding_df in embedding_datasets.items():
+        try:
+            if 'gene_id' in embedding_df.columns:
+                merged = embedding_df.merge(emogi_data, on='gene_id', how='inner')
+                merged.set_index('gene_id', inplace=True)
+            else:
+                merged = embedding_df.merge(emogi_data, left_index=True, right_on='gene_id', how='inner')
+                merged.set_index('gene_id', inplace=True)
+
+            drop_cols = ['label']
+            if 'pred' in merged.columns and embedding_name != 'Emogi_Predictions':
+                drop_cols.append('pred')
+            X = merged.drop(columns=drop_cols, errors='ignore').select_dtypes(include=[np.number])
+            y = merged['label']
+
+            cv_ap = []
+            for tr, te in cv.split(X, y):
+                X_tr, X_te = X.iloc[tr], X.iloc[te]
+                y_tr, y_te = y.iloc[tr], y.iloc[te]
+                clf_xgb = XGBClassifier(n_estimators=100, random_state=42, eval_metric='logloss', n_jobs=-1)
+                clf_xgb.fit(X_tr, y_tr)
+                y_prob = clf_xgb.predict_proba(X_te)[:, 1]
+                cv_ap.append(average_precision_score(y_te, y_prob))
+
+            results.append({
+                'Embedding': embedding_name,
+                'auPRC': float(np.mean(cv_ap)),
+                'auPRC_std': float(np.std(cv_ap)),
+                'Samples': int(len(X)),
+                'Positive_Rate': float(y.mean())
+            })
+        except Exception as e:
+            print(f"Error processing {embedding_name}: {e}")
+            continue
+
+    if not results:
+        print("No results to plot.")
+        return pd.DataFrame(columns=['Embedding','auPRC','auPRC_std','Samples','Positive_Rate'])
+
+    df = pd.DataFrame(results).sort_values('auPRC', ascending=True)  # ascending for nice bottom-up plot
+
+    # Lollipop chart
+    fig, ax = plt.subplots(figsize=(11, 6))
+    y_pos = np.arange(len(df))
+    ax.hlines(y=y_pos, xmin=0, xmax=df['auPRC'], color='#f5a623', linewidth=3, alpha=0.9)
+    ax.scatter(df['auPRC'], y_pos, s=120, color='#f5a623', edgecolor='black', zorder=3)
+
+    # annotate values
+    x_max = max(0.05, float((df['auPRC'] + df['auPRC_std']).max()))
+    x_pad = 0.02 if x_max < 0.5 else 0.01
+    for x, yv, emb in zip(df['auPRC'], y_pos, df['Embedding']):
+        ax.text(x + x_pad, yv, f"{x:.3f}", va='center', fontsize=10)
+
+    ax.axvline(baseline_rate, color='gray', linestyle='--', linewidth=1, alpha=0.7)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(df['Embedding'])
+    ax.set_xlabel('auPRC (5-fold CV)')
+    ax.set_title('XGBoost auPRC Across Embeddings (Sorted Lollipop Chart)')
+    ax.grid(axis='x', alpha=0.2, linestyle='--')
+    ax.set_xlim(0, min(1.0, x_max * 1.15))
+
+    fig.tight_layout()
+
+    if save_plots:
+        os.makedirs("plots/AuPRC", exist_ok=True)
+        fname = "AuPRC_Emogi_Labels_XGBoost_5FoldCV_lollipop.png"
+        if title_suffix:
+            fname = f"AuPRC_Emogi_Labels_XGBoost_5FoldCV_lollipop_{title_suffix}.png"
+        out_file = f"plots/AuPRC/{fname}"
+        fig.savefig(out_file, dpi=300, bbox_inches='tight')
+        plt.show()
+        print(f"Lollipop plot saved as: {out_file}")
+
+    return df
