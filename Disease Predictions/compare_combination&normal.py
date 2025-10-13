@@ -37,16 +37,16 @@ orthrus_pops_exp_pca = pca_reduce(orthrus_pops_exp_normalized, n_components=256)
 
 embedding_datasets = {
     "STRING": string,
+    'STRING + Orthrus': orthrus_string_pca,
     "STRING Exp": string_exp,
+    'STRING_EXP + Orthrus': orthrus_string_exp_pca,
     "PoPS": pops,
+    'PoPS + Orthrus': orthrus_pops_pca,
     "PoPS Exp": pops_exp,
+    'PoPS_EXP + Orthrus': orthrus_pops_exp_pca,
     "Omics": omics,
+    'Omics + Orthrus': orthrus_omics_pca,
     "Orthrus": orthrus,
-    'Omics + Orthrus': orthrus_omics_normalized,
-    'STRING + Orthrus': orthrus_string_normalized,
-    'STRING_EXP + Orthrus': orthrus_string_exp_normalized,
-    'PoPS + Orthrus': orthrus_pops_normalized,
-    'PoPS_EXP + Orthrus': orthrus_pops_exp_normalized,
 }
 
 disease_datasets = {
