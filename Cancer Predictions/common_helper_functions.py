@@ -470,8 +470,8 @@ def compare_embeddings_auprc_barplots(embedding_datasets, emogi_data, save_plots
                 ax.text(bar.get_x() + bar.get_width()/2, h + 0.005, 
                        f"{h:.3f}", ha='center', va='bottom', fontsize=9)
 
-        ax.set_ylabel('auPRC (5-Fold CV)')
-        ax.set_title(f'{model} auPRC Across Embeddings (Emogi Labels, 5-Fold CV)')
+        ax.set_ylabel('auPRC', fontsize=14, weight="bold")
+        ax.set_title(f'{model} auPRC Across Embeddings', fontsize=15, weight="bold")
         ax.set_xticklabels(sub.index, rotation=45, ha='right')
         ymax = (sub['auPRC'] + sub['auPRC_std']).max() if (sub['auPRC'] + sub['auPRC_std']).notna().any() else 0
         ax.set_ylim(0, min(1.0, ymax + 0.05))
