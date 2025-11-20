@@ -1,6 +1,6 @@
 ## RNA / Gene Disease Predictions
 
-This repository evaluates a variety of published and DNA/RNA embeddings on cancer and rare disease classification tasks. The code compares embeddings (including Omics, STRING, PoPS, Orthrus, ESM2, in‑house RNA embeddings, and others) using tree models.
+This repository evaluates a variety of published and DNA/RNA embeddings on cancer and rare disease classification tasks. The code compares embeddings (including Omics, STRING, PoPS, Orthrus, ESM2, Orthrus RNA embeddings, and others) using tree models.
 ---
 
 ### Requirements
