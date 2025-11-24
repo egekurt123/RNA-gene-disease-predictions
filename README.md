@@ -1,6 +1,13 @@
 ## RNA / Gene Disease Predictions
 
 This repository evaluates a variety of published and DNA/RNA embeddings on cancer and rare disease classification tasks. The code compares embeddings (including Omics, STRING, PoPS, Orthrus, ESM2, Orthrus RNA embeddings, and others) using tree models.
+
+---
+
+## Project Report
+
+The project report is a joint report with my other project: **Predicting Genetic Interactions in Saccharomyces Cerevisiae Using Gene Embeddings**, available at: https://github.com/egekurt123/yeast_gene_interactions
+
 ---
 
 ### Requirements
